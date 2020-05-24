@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  vars: 
+    distro: "{{ ansible_distribution|lower }}"
+  roles:
+    - common

@@ -1,0 +1,11 @@
+---
+- hosts: k8s_masters
+  become: yes
+  vars:
+    initial_cluster: |
+      {% set comma = joiner(",") %}
+      {% set master in groups["k8s_masters"] -%}
+        {{ comma() }}{{ master }}=https://{{ hostvars[master]["ansible_usehost"] }}:2380
+      {%- endfor %} \
+  roles:
+    - {role: gen-k8s-certs, when: "groups['k8s_masters'][0] == inventory_hostname"}

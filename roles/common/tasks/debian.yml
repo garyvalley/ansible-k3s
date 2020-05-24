@@ -1,0 +1,35 @@
+---
+- name: Ensure prerequisite packages exist
+  apt:
+          name: "{{ packages }}"
+          state: present
+          update_cache: yes
+
+- name: Remove the swapfile from /etc/fstab
+  mount:
+          name: [swap, none]
+          fstype: swap
+          state: absent
+
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+  
+- name: Set swapiness to zero
+  become: true
+  lineinfile:
+          path: /etc/sysctl.conf
+          line: vm.swapiness=0
+
+- name: Stop ntpd service
+  become: yes
+  service:
+          name: ntp
+          state: stopped
+
+- name: Start ntpd service
+  become: yes
+  service:
+          name: ntp
+          state: restarted
+          enabled: yes

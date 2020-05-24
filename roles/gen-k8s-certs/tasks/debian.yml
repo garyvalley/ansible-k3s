@@ -1,0 +1,25 @@
+---
+- name: Install cfssl
+  become: yes
+  get_url: 
+        url: "{{ cfssl_url }}"
+        dest: /usr/local/bin/cfssl
+        mode: '0755'
+
+- name: Install cfssl_json
+  become: yes
+  get_url: 
+        url: "{{ cfssl_json_url }}"
+        dest: /usr/local/bin/cfssljson
+        mode: '0755'
+
+- name: Copy ca-cert config files
+  copy:
+          src: certs/
+          dest: /etc/kubernetes/pki/etcd/
+          directory_mode: true
+
+- name: Generate CA certs
+  shell: |
+         cd /etc/kubernetes/pki/etcd
+         /usr/local/bin/cfssl gencert -initca ca-csr.json | /usr/local/bin/cfssljson -bare ca -
