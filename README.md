@@ -20,13 +20,20 @@ git clone https://github.com/garyvalley/ansible-k3s
 The format of the inventory file is given here
 ```
 <group name>
-    hosts:
-	<host name 1>:
+  hosts:
+    <host name 1>:
 	    ansible_host: <ip address 1>
-	<host name 2>:
+	    ansible_user: <ubuntu>
+    <host name 2>:
 	    ansible_host: <ip address 2>
-    vars:
-	ansible_user: ubuntu
+	    ansible_user: <ubuntu>
+  children:
+    k3s_master:
+      hosts:
+        <host_name>
+    k3s_nodes:
+      hosts:
+        <host_name>
 ```
 
 All components inside a "&lt;&gt;" tag are configurable and should be updated to 
@@ -42,7 +49,6 @@ to), get a ssh key:
 sudo apt update
 sudo apt upgrade
 ssh-keygen
-
 ```
 
 Next, copy that id to all the hosts in the cluster. For my four node installation, I did this 
