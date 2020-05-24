@@ -82,3 +82,13 @@
     name: ntp
     state: restarted
     enabled: yes
+
+- name: Set Kernel features for the RPIs (/boot/cmdline.txt)
+  copy:
+    dest: "/boot/cmdline.txt"
+    content: |
+      cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+
+- name: Reboot the system -- RPIs are slow so wait a bit
+  reboot:
+    reboot_timeout: 300

@@ -1,0 +1,6 @@
+---
+
+packages:
+  - ntp
+  - ntpdate
+  - openssl
