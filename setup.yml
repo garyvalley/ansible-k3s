@@ -1,6 +1,6 @@
 ---
 - import_playbook: playbooks/init.yml
-  #- import_playbook: playbooks/common.yml
+- import_playbook: playbooks/common.yml
   #- import_playbook: playbooks/docker.yml
   #- import_playbook: playbooks/kubeadm.yml
   #- import_playbook: playbooks/ha-etcd.yml

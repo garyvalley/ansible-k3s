@@ -34,7 +34,29 @@ match the environment.
 
 ## 4. Ensure the ansible.cfg file points at the appropriate path for your system
 
-## 5. Run the setup command
+## 5. Generate SSH keypairs from the ansible-controller to the hosts
+On the ansible-controller (i.e. the system where you have cloned this git repository 
+to), get a ssh key:
+
+```
+sudo apt update
+sudo apt upgrade
+ssh-keygen
+
+```
+
+Next, copy that id to all the hosts in the cluster. For my four node installation, I did this 
+manually, but a bash script would make sense if the number of nodes grows.
+```
+ssh-copy-id -i ~/.ssh/id_rsa ubuntu@<host>
+```
+
+Verify that you can connect to a server (by ip) in the cluster, but without a password
+```
+ssh ubuntu@<host>
+```
+
+## 6. Run the setup command
 Run the setup command on the provisioning box (Ubuntu VM) to build the RPI cluster
 ```
 ansible-playbook setup.yml
