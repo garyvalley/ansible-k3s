@@ -1,3 +1,4 @@
+---
 all:
   hosts:
     master:
@@ -6,17 +7,17 @@ all:
     node1:
       ansible_host: 192.168.86.101
       ansible_user: ubuntu
-    node2: 
+    node2:
       ansible_host: 192.168.86.102
       ansible_user: ubuntu
     node3:
       ansible_host: 192.168.86.103
       ansible_user: ubuntu
   children:
-    k8s_masters: 
+    k3s_master:
       hosts:
         master:
-    k8s_nodes:
+    k3s_nodes:
       hosts:
         node1:
         node2:
