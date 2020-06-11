@@ -1,45 +1,52 @@
 ---
 - name: Add the ubuntu user to the sudoers
-  become: yes
+  become: true
   copy:
     dest: "/etc/sudoers.d/ubuntu"
     content: "ubuntu ALL=(ALL) NOPASSWD: ALL"
 
 - name: Deploy the SSH key
-  become: yes
+  become: true
   authorized_key: user=ubuntu
                   key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
                   state=present
 
 - name: Disable password authentication
-  become: yes
+  become: true
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: '^PasswordAuthentication'
     line: "PasswordAuthentication no"
     state: present
-    backup: yes
+    backup: true
   notify:
     - restart ssh
 
 - name: Disable root login
-  become: yes
+  become: true
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: '^PermitRootLogin'
     line: "PermitRootLogin no"
     state: present
-    backup: yes
+    backup: true
   notify:
     - restart ssh
 
 - name: Set the hostname
-  become: yes
+  become: true
   hostname:
     name: "{{ inventory_hostname }}"
 
+- name: Ensure that the loopback is named
+  replace:
+    dest: /etc/hosts
+    regexp: localhost
+    replace: '{{ inventory_hostname }}'
+    backup: yes
+
 - name: Add the inventory to /etc/hosts
-  become: yes
+  become: true
   lineinfile:
     dest: /etc/hosts
     regexp: '.*{{ item }}$'
@@ -52,7 +59,7 @@
   apt:
     name: "{{ packages }}"
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Remove the swapfile from /etc/fstab
   mount:
@@ -71,24 +78,51 @@
     line: vm.swapiness=0
 
 - name: Stop ntpd service
-  become: yes
+  become: true
   service:
     name: ntp
     state: stopped
 
 - name: Start ntpd service
-  become: yes
+  become: true
   service:
     name: ntp
     state: restarted
-    enabled: yes
+    enabled: true
+
+- name: Test for the cgroup updates 
+  command: 'grep cgroup_enable=memory" /boot/firmware/nobtcmd.txt'
+  register: cgroup_group
+  ignore_errors: true
 
 - name: Set Kernel features for the RPIs (/boot/cmdline.txt)
-  copy:
-    dest: "/boot/cmdline.txt"
-    content: |
-      cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+  lineinfile:
+    path: /boot/firmware/nobtcmd.txt
+    backrefs: true
+    state: present
+    regexp: '(.*)$'
+    line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
+  when: cgroup_group.rc == 1
+
+- name: Set GPU memory split to 16MB
+  lineinfile:
+    path: /boot/config.txt
+    line: 'gpu_mem=16'
+    create: true
 
 - name: Reboot the system -- RPIs are slow so wait a bit
   reboot:
     reboot_timeout: 300
+
+- name: Download K3s
+  get_url: 
+    url: https://get.k3s.io
+    dest: /opt/setup_k3s.sh
+    mode: 0755
+
+    #- name: Setup K3s
+  #become: true
+  #command: /opt/setup_k3s.sh 
+  #environment:
+    #K3S_URL: "https://{{ hostvars['master']['ansible_host'] }}:6443"
+    #when: inventory_hostname in groups['k3s_master']
