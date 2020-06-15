@@ -90,12 +90,24 @@
     state: restarted
     enabled: true
 
+- name: Make sure the nobtcmd.txt file exists
+  stat:
+    path: /boot/firmware/nobtcmd.txt
+  register: nobtcmd
+
+- name: Make sure the file exists (/boot/firmware/nobtcmd.txt)
+  file:
+    path: /boot/firmware/nobtcmd.txt
+    state: touch
+    mode: u=rwx,g=rx,o=rx
+  when: not nobtcmd.stat.exists
+
 - name: Test for the cgroup updates 
-  command: 'grep cgroup_enable=memory" /boot/firmware/nobtcmd.txt'
+  command: 'grep "cgroup_enable=memory" /boot/firmware/nobtcmd.txt'
   register: cgroup_group
   ignore_errors: true
 
-- name: Set Kernel features for the RPIs (/boot/cmdline.txt)
+- name: Set Kernel features for the RPIs (/boot/firmware/nobtcmd.txt)
   lineinfile:
     path: /boot/firmware/nobtcmd.txt
     backrefs: true
@@ -103,6 +115,26 @@
     regexp: '(.*)$'
     line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
   when: cgroup_group.rc == 1
+
+- name: Make sure the file exists (/boot/firmware/cmdline.txt)
+  file:
+    path: /boot/firmware/cmdline.txt
+    state: touch
+    mode: u=rwx,g=rx,o=rx
+
+- name: Test for the cgroup updates 
+  command: 'grep "cgroup_enable=memory" /boot/firmware/cmdline.txt'
+  register: cgroup_group2
+  ignore_errors: true
+
+- name: Set Kernel features for the RPIs (/boot/cmdline.txt)
+  lineinfile:
+    path: /boot/firmware/cmdline.txt
+    backrefs: true
+    state: present
+    regexp: '(.*)$'
+    line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
+  when: cgroup_group2.rc == 1
 
 - name: Set GPU memory split to 16MB
   lineinfile:
@@ -114,15 +146,17 @@
   reboot:
     reboot_timeout: 300
 
-- name: Download K3s
-  get_url: 
-    url: https://get.k3s.io
-    dest: /opt/setup_k3s.sh
-    mode: 0755
-
-    #- name: Setup K3s
-  #become: true
-  #command: /opt/setup_k3s.sh 
-  #environment:
+- name: Install K3s
+  shell: "curl -sfL {{ k3s_url }} | sh -"
+  environment:
+    K3S_KUBECONFIG_MODE: "644"
+    INSTALL_K3S_EXEC: " --no-deploy servicelb --no-deploy traefik --cluster-init"
+    K3S_TOKEN: "notforshare"
     #K3S_URL: "https://{{ hostvars['master']['ansible_host'] }}:6443"
-    #when: inventory_hostname in groups['k3s_master']
+  when: inventory_hostname in groups['k3s_master']
+
+- name: Get the token from the master
+  slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: node_token
+  when: inventory_hostname in groups['k3s_master']
