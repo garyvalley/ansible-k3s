@@ -9,6 +9,8 @@ remove_packages:
   - snapd
   - squashfs-tools
 
+snap_mounts: "/var/lib/snapd/snaps/*.snap"
+
 cmdline_file: /boot/firmware/cmdnline.txt
 
 nobtcmd_file: /boot/firmware/nobtcmd.txt

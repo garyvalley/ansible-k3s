@@ -61,6 +61,12 @@
     state: present
     update_cache: true
 
+- name: Unmount all the snaps
+  become: true
+  mount:
+    path: "{{ snap_mounts }}"
+    state: unmounted
+
 - name: Ensure certain packages don't exist
   apt:
     name: "{{ remove_packages }}"
@@ -166,3 +172,6 @@
     src: "{{ k3s_node_token_path }}"
   register: node_token
   when: inventory_hostname in groups['k3s_master']
+
+- name: Show off the token
+  shell: "echo {{ node_token }}"
