@@ -1,9 +1,20 @@
 ---
-
-packages:
+install_packages:
   - ntp
   - ntpdate
   - openssl
   - docker.io
 
-k3s_url: https://get.k3s.io
+remove_packages:
+  - snapd
+  - squashfs-tools
+
+cmdline_file: /boot/firmware/cmdnline.txt
+
+nobtcmd_file: /boot/firmware/nobtcmd.txt
+
+k3s_install_cmd: "curl -sfL https://get.k3s.io | sh -"
+
+k3s_install_opts: " --no-deploy servicelb --no-deploy traefik --cluster-init"
+
+k3s_node_token_path: /var/lib/rancher/k3s/server/node-token

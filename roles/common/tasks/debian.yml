@@ -57,8 +57,14 @@
 
 - name: Ensure prerequisite packages exist
   apt:
-    name: "{{ packages }}"
+    name: "{{ install_packages }}"
     state: present
+    update_cache: true
+
+- name: Ensure certain packages don't exist
+  apt:
+    name: "{{ remove_packages }}"
+    state: absent
     update_cache: true
 
 - name: Remove the swapfile from /etc/fstab
@@ -92,44 +98,44 @@
 
 - name: Make sure the nobtcmd.txt file exists
   stat:
-    path: /boot/firmware/nobtcmd.txt
+    path: "{{ nobtcmd_file }}"
   register: nobtcmd
 
-- name: Make sure the file exists (/boot/firmware/nobtcmd.txt)
+- name: Make sure the file exists
   file:
-    path: /boot/firmware/nobtcmd.txt
+    path: "{{ nobtcmd_file }}"
     state: touch
     mode: u=rwx,g=rx,o=rx
   when: not nobtcmd.stat.exists
 
 - name: Test for the cgroup updates 
-  command: 'grep "cgroup_enable=memory" /boot/firmware/nobtcmd.txt'
+  command: "grep 'cgroup_enable=memory' {{ nobtcmd_file }}"
   register: cgroup_group
   ignore_errors: true
 
-- name: Set Kernel features for the RPIs (/boot/firmware/nobtcmd.txt)
+- name: Set Kernel features for the RPIs 
   lineinfile:
-    path: /boot/firmware/nobtcmd.txt
+    path: "{{ nobtcmd_file }}"
     backrefs: true
     state: present
     regexp: '(.*)$'
     line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
   when: cgroup_group.rc == 1
 
-- name: Make sure the file exists (/boot/firmware/cmdline.txt)
+- name: Make sure the file exists
   file:
-    path: /boot/firmware/cmdline.txt
+    path: "{{ cmdline_file }}"
     state: touch
     mode: u=rwx,g=rx,o=rx
 
 - name: Test for the cgroup updates 
-  command: 'grep "cgroup_enable=memory" /boot/firmware/cmdline.txt'
+  command: "grep 'cgroup_enable=memory' {{ cmdline_file }}"
   register: cgroup_group2
   ignore_errors: true
 
-- name: Set Kernel features for the RPIs (/boot/cmdline.txt)
+- name: Set Kernel features for the RPIs 
   lineinfile:
-    path: /boot/firmware/cmdline.txt
+    path: "{{ cmdline_file }}"
     backrefs: true
     state: present
     regexp: '(.*)$'
@@ -147,16 +153,16 @@
     reboot_timeout: 300
 
 - name: Install K3s
-  shell: "curl -sfL {{ k3s_url }} | sh -"
+  shell: "{{ k3s_install_cmd }}"
   environment:
     K3S_KUBECONFIG_MODE: "644"
-    INSTALL_K3S_EXEC: " --no-deploy servicelb --no-deploy traefik --cluster-init"
+    INSTALL_K3S_EXEC: "{{ k3s_install_opts }}"
     K3S_TOKEN: "notforshare"
     #K3S_URL: "https://{{ hostvars['master']['ansible_host'] }}:6443"
   when: inventory_hostname in groups['k3s_master']
 
 - name: Get the token from the master
   slurp:
-    src: /var/lib/rancher/k3s/server/node-token
+    src: "{{ k3s_node_token_path }}"
   register: node_token
   when: inventory_hostname in groups['k3s_master']
