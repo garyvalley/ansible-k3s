@@ -1,6 +1,3 @@
 ---
-
-packages:
-  - ntp
-  - ntpdate
-  - openssl
+k3s_install_cmd: "curl -sfL https://get.k3s.io | sh -"
+k3s_node_token_path: "/var/lib/rancher/k3s/server/node-token"

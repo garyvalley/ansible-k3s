@@ -5,4 +5,4 @@
   vars: 
     distro: "{{ ansible_distribution|lower }}"
   roles:
-    - docker
+    - k3s

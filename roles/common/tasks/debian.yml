@@ -1,18 +1,15 @@
 ---
 - name: Add the ubuntu user to the sudoers
-  become: true
   copy:
     dest: "/etc/sudoers.d/ubuntu"
     content: "ubuntu ALL=(ALL) NOPASSWD: ALL"
 
 - name: Deploy the SSH key
-  become: true
   authorized_key: user=ubuntu
                   key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
                   state=present
 
 - name: Disable password authentication
-  become: true
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: '^PasswordAuthentication'
@@ -23,7 +20,6 @@
     - restart ssh
 
 - name: Disable root login
-  become: true
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: '^PermitRootLogin'
@@ -34,7 +30,6 @@
     - restart ssh
 
 - name: Set the hostname
-  become: true
   hostname:
     name: "{{ inventory_hostname }}"
 
@@ -46,7 +41,6 @@
     backup: yes
 
 - name: Add the inventory to /etc/hosts
-  become: true
   lineinfile:
     dest: /etc/hosts
     regexp: '.*{{ item }}$'
@@ -61,17 +55,21 @@
     state: present
     update_cache: true
 
-- name: Unmount all the snaps
-  become: true
-  mount:
-    path: "{{ snap_mounts }}"
-    state: unmounted
+    #- name: Unmount all the snaps
+    #mount:
+    #path: "{{ snap_mounts }}"
+    #state: unmounted
 
-- name: Ensure certain packages don't exist
-  apt:
-    name: "{{ remove_packages }}"
-    state: absent
-    update_cache: true
+    #- name: Ensure certain packages don't exist
+    #apt:
+    #name: "{{ remove_packages }}"
+    #state: absent
+    #update_cache: true
+
+- name: GPU config to 16MB
+  lineinfile:
+    path: /boot/firmware/config.txt
+    line: gpu_mem=16
 
 - name: Remove the swapfile from /etc/fstab
   mount:
@@ -84,19 +82,16 @@
   when: ansible_swaptotal_mb > 0
   
 - name: Set swapiness to zero
-  become: true
   lineinfile:
     path: /etc/sysctl.conf
     line: vm.swapiness=0
 
 - name: Stop ntpd service
-  become: true
   service:
     name: ntp
     state: stopped
 
 - name: Start ntpd service
-  become: true
   service:
     name: ntp
     state: restarted
@@ -148,30 +143,6 @@
     line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
   when: cgroup_group2.rc == 1
 
-- name: Set GPU memory split to 16MB
-  lineinfile:
-    path: /boot/config.txt
-    line: 'gpu_mem=16'
-    create: true
-
 - name: Reboot the system -- RPIs are slow so wait a bit
   reboot:
     reboot_timeout: 300
-
-- name: Install K3s
-  shell: "{{ k3s_install_cmd }}"
-  environment:
-    K3S_KUBECONFIG_MODE: "644"
-    INSTALL_K3S_EXEC: "{{ k3s_install_opts }}"
-    K3S_TOKEN: "notforshare"
-    #K3S_URL: "https://{{ hostvars['master']['ansible_host'] }}:6443"
-  when: inventory_hostname in groups['k3s_master']
-
-- name: Get the token from the master
-  slurp:
-    src: "{{ k3s_node_token_path }}"
-  register: node_token
-  when: inventory_hostname in groups['k3s_master']
-
-- name: Show off the token
-  shell: "echo {{ node_token }}"
