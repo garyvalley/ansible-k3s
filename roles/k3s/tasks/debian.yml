@@ -10,7 +10,7 @@
   when: inventory_hostname in groups['k3s_master']
 
 - name: Capture the token
-  set_fact: node_token="{{ token.content }}"
+  set_fact: node_token="{{ token.content | b64decode }}"
   when: inventory_hostname in groups['k3s_master']
 
 - name: Show off the token
@@ -20,6 +20,6 @@
 - name: Join k3s nodes to the cluster
   shell: "{{ k3s_install_cmd }}"
   environment:
-    K3S_URL: "https://{{ hostvars['master']['ansible_host'] }}:6443"
+    K3S_URL: "https://{{ hostvars['master']['hostname'] }}:6443"
     K3S_TOKEN: "{{ hostvars['master']['node_token'] }}"
   when: inventory_hostname in groups['k3s_nodes']

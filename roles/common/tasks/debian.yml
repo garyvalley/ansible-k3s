@@ -55,17 +55,6 @@
     state: present
     update_cache: true
 
-    #- name: Unmount all the snaps
-    #mount:
-    #path: "{{ snap_mounts }}"
-    #state: unmounted
-
-    #- name: Ensure certain packages don't exist
-    #apt:
-    #name: "{{ remove_packages }}"
-    #state: absent
-    #update_cache: true
-
 - name: GPU config to 16MB
   lineinfile:
     path: /boot/firmware/config.txt
@@ -96,6 +85,10 @@
     name: ntp
     state: restarted
     enabled: true
+
+- name: Set the timezone to America/Los_Angeles
+  timezone:
+    name: America/Los_Angeles
 
 - name: Make sure the nobtcmd.txt file exists
   stat:
