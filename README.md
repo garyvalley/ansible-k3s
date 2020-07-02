@@ -13,30 +13,32 @@ git clone https://github.com/garyvalley/ansible-k3s
 In the test environment, the RPIs are hardwired to a Netgear 5-port switch and a USB
 hub to power them.  Then, the following is required:
 
-### Flash each RPI
-I used the Balena Etcher tool (free) to flash the SD cards with the Ubuntu 20.04 LTS for ARM
-operating system that I downloaded from [here] (https://ubuntu.com/download/raspberry-pi). I used
-a USB SD card reader/writer to do this.  
+  ### Flash each RPI
+  I used the Balena Etcher tool (free) to flash the SD cards with the Ubuntu 20.04 LTS for ARM
+  operating system that I downloaded from [here] (https://ubuntu.com/download/raspberry-pi). I used
+  a USB SD card reader/writer to do this.  
 
-### Set up your RPIs
-Ensure you know the IP addresses of your RPI (Raspberry PI) hosts. (I found mine by using 
-their MAC addresses and looking them up in the Google Wifi list.)  You'll need these to connect 
-to each RPI. Once you have those IP addresses, you'll need to do the following on each host:
-1. SSH to each RPI. 
-```
-ssh ubuntu@<ip_address>
-```
-Ubuntu 20.04 will make you change the password on the first login. (The default
-username and password is ubuntu/ubuntu.) You should change this to a password you know.
-2. Wait for a bit. Ubuntu 20.04 will automatically start updating itself upon receiving an
-internet connection. This might take a while on RPIs. If you know how, you can log on to the
-systems and do this manually. If not, simply waiting will complete the task. (Don't worry. The
-automated install will guarantee updated/upgraded packages.)  
-3. Login to each RPI (using the password you created in step 1) and reboot them.
-```
-ssh ubuntu@<ip_address>
-sudo reboot
-```
+  ### Set up your RPIs
+  Ensure you know the IP addresses of your RPI (Raspberry PI) hosts. (I found mine by using 
+  their MAC addresses and looking them up in the Google Wifi list.)  You'll need these to connect 
+  to each RPI. Once you have those IP addresses, you'll need to do the following on each host:
+  1. SSH to each RPI. 
+  ```
+  ssh ubuntu@<ip_address>
+  ```
+  Ubuntu 20.04 will make you change the password on the first login. (The default
+  username and password is ubuntu/ubuntu.) You should change this to a password you know.
+
+  2. Wait for a bit. Ubuntu 20.04 will automatically start updating itself upon receiving an
+  internet connection. This might take a while on RPIs. If you know how, you can log on to the
+  systems and do this manually. If not, simply waiting will complete the task. (Don't worry. The
+  automated install will guarantee updated/upgraded packages.)  
+
+  3. Login to each RPI (using the password you created in step 1) and reboot them.
+  ```
+  ssh ubuntu@<ip_address>
+  sudo reboot
+  ```
 
 ## 3. Update the inventory to match your host IPs and desired names
 The format of the inventory file is given here
