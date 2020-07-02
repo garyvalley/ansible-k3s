@@ -1,0 +1,6 @@
+---
+helm_apt_key: "https://helm.baltorepo.com/organization/signing.asc"
+helm_repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
+helm_repo_file: "helm-stable-debian.list"
+packages:
+  - helm

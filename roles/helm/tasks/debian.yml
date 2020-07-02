@@ -1,0 +1,17 @@
+---
+- name: Add an apt-key for Helm
+  apt_key:
+    url: "{{ helm_apt_key }}"
+    state: present
+
+- name: Add a new repository for Helm to the sources lists
+  apt_repository:
+    repo: "{{ helm_repo }}"
+    state: present
+    filename: "{{ helm_repo_file }}"
+
+- name: Install Helm (via apt)
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
