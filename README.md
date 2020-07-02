@@ -4,7 +4,7 @@ a cluster of Raspberry Pi's (RPIs).  This has been tested with Raspberry Pi 3B+ 
 systems (but not earlier models). These RPIs were configured with 64Gb SD cards.  The
 following setup should produce an automated working k3s cluster:
 
-## 1. Clone the repository into your Ubuntu VM
+## 1. Clone the repository into your deployment machine
 ```
 git clone https://github.com/garyvalley/ansible-k3s
 ```
@@ -123,8 +123,8 @@ Verify that you can connect to a server (by ip) in the cluster, but without a pa
 ssh ubuntu@<host>
 ```
 
-## 6. Run the setup command
-Run the setup command on the provisioning box (Ubuntu VM) to build the RPI cluster
+## 6. Run the setup playbook
+Run the setup command on the deployment system to build the RPI cluster
 ```
 ansible-playbook setup.yml
 ```
